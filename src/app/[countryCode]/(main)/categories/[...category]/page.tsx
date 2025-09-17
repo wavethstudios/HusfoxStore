@@ -16,159 +16,70 @@ type Props = {
 }
 
 export async function generateStaticParams() {
-  try {
-    console.log("Starting generateStaticParams...")
+  const product_categories = await listCategories()
 
-    // Get categories with error handling
-    const product_categories = await listCategories()
-    console.log("Categories fetched:", product_categories?.length || 0)
+  if (!product_categories) {
+    return []
+  }
 
-    if (!product_categories || product_categories.length === 0) {
-      console.log("No categories found, returning empty array")
-      return []
-    }
+  const countryCodes = await listRegions().then((regions: StoreRegion[]) =>
+    regions?.map((r) => r.countries?.map((c) => c.iso_2)).flat()
+  )
 
-    // Get regions with better error handling
-    const regions = await listRegions()
-    console.log("Regions fetched:", regions?.length || 0)
+  const categoryHandles = product_categories.map(
+    (category: any) => category.handle
+  )
 
-    if (!regions || regions.length === 0) {
-      console.log("No regions found, returning empty array")
-      return []
-    }
-
-    // Safely extract country codes with proper typing
-    const countryCodes: string[] = regions
-      .filter(
-        (region: StoreRegion) =>
-          region.countries && Array.isArray(region.countries)
-      )
-      .flatMap(
-        (region: StoreRegion) =>
-          region.countries
-            ?.map((country) => country.iso_2)
-            .filter((code): code is string => Boolean(code)) || []
-      )
-
-    console.log("Country codes extracted:", countryCodes.length)
-
-    if (countryCodes.length === 0) {
-      console.log("No valid country codes found, returning empty array")
-      return []
-    }
-
-    // Safely extract category handles with proper typing
-    const categoryHandles: string[] = product_categories
-      .map((category: any) => category?.handle)
-      .filter((handle): handle is string => Boolean(handle))
-
-    console.log("Category handles extracted:", categoryHandles.length)
-
-    if (categoryHandles.length === 0) {
-      console.log("No valid category handles found, returning empty array")
-      return []
-    }
-
-    // Generate static params safely - now both arrays are guaranteed to contain strings
-    const staticParams = countryCodes.flatMap((countryCode: string) =>
-      categoryHandles.map((handle: string) => ({
+  const staticParams = countryCodes
+    ?.map((countryCode: string | undefined) =>
+      categoryHandles.map((handle: any) => ({
         countryCode,
         category: [handle],
       }))
     )
+    .flat()
 
-    console.log("Static params generated:", staticParams.length)
-
-    // Limit the number of static params to avoid build timeouts
-    // Remove this limit if you need all combinations
-    const limitedParams = staticParams.slice(0, 1000)
-
-    if (limitedParams.length < staticParams.length) {
-      console.log(
-        `Limited static params to ${limitedParams.length} from ${staticParams.length}`
-      )
-    }
-
-    return limitedParams
-  } catch (error) {
-    console.error("Error in generateStaticParams:", error)
-    // Return empty array to prevent build failure
-    // Consider if you want the build to fail or continue with empty params
-    return []
-  }
+  return staticParams
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params
   try {
-    const params = await props.params
-    console.log("Generating metadata for category:", params.category)
-
-    if (
-      !params.category ||
-      !Array.isArray(params.category) ||
-      params.category.length === 0
-    ) {
-      console.log("Invalid category params, using notFound")
-      notFound()
-    }
-
     const productCategory = await getCategoryByHandle(params.category)
 
-    if (!productCategory) {
-      console.log("Product category not found, using notFound")
-      notFound()
-    }
-
     const title = productCategory.name + " | Medusa Store"
+
     const description = productCategory.description ?? `${title} category.`
 
     return {
-      title,
+      title: `${title} | Medusa Store`,
       description,
       alternates: {
         canonical: `${params.category.join("/")}`,
       },
     }
   } catch (error) {
-    console.error("Error in generateMetadata:", error)
     notFound()
   }
 }
 
 export default async function CategoryPage(props: Props) {
-  try {
-    const searchParams = await props.searchParams
-    const params = await props.params
-    const { sortBy, page } = searchParams
+  const searchParams = await props.searchParams
+  const params = await props.params
+  const { sortBy, page } = searchParams
 
-    console.log("Rendering category page for:", params.category)
+  const productCategory = await getCategoryByHandle(params.category)
 
-    if (
-      !params.category ||
-      !Array.isArray(params.category) ||
-      params.category.length === 0
-    ) {
-      console.log("Invalid category params in page component")
-      notFound()
-    }
-
-    const productCategory = await getCategoryByHandle(params.category)
-
-    if (!productCategory) {
-      console.log("Product category not found in page component")
-      notFound()
-    }
-
-    return (
-      <CategoryTemplate
-        category={productCategory}
-        sortBy={sortBy}
-        page={page}
-        countryCode={params.countryCode}
-      />
-    )
-  } catch (error) {
-    console.error("Error in CategoryPage component:", error)
+  if (!productCategory) {
     notFound()
   }
+
+  return (
+    <CategoryTemplate
+      category={productCategory}
+      sortBy={sortBy}
+      page={page}
+      countryCode={params.countryCode}
+    />
+  )
 }
