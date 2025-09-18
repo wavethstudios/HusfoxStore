@@ -1,11 +1,11 @@
 {
-  "name": "medusa-next",
+  "name": "husfox",
   "version": "1.0.3",
   "private": true,
-  "author": "Kasper Fabricius Kristensen <kasper@medusajs.com> & Victor Gerbrands <victor@medusajs.com> (https://www.medusajs.com)",
-  "description": "Next.js Starter to be used with Medusa V2",
+  "author": "Waveth Studios (https://www.waveth.com)",
+  "description": "Discover Husfox, a modern clothing brand blending timeless design with everyday comfort. Shop premium styles crafted for confidence, individuality, and effortless living.",
   "keywords": [
-    "medusa-storefront"
+    "husfox-storefront"
   ],
   "scripts": {
     "dev": "next dev --turbopack -p 8000",

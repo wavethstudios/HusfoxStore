@@ -6,9 +6,9 @@ import { listCollections } from "@lib/data/collections"
 import { getRegion } from "@lib/data/regions"
 
 export const metadata: Metadata = {
-  title: "Medusa Next.js Starter Template",
+  title: "Husfox - Contemporary Clothing Brand",
   description:
-    "A performant frontend ecommerce starter template with Next.js 15 and Medusa.",
+    "Discover Husfox, a modern clothing brand blending timeless design with everyday comfort. Shop premium styles crafted for confidence, individuality, and effortless living.",
 }
 
 export default async function Home(props: {
