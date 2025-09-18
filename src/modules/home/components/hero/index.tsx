@@ -19,7 +19,7 @@ const Hero = () => {
             Timeless Wear, Modern Edge.
           </Heading>
         </span>
-        <a href="https://github.com/medusajs/nextjs-starter-medusa">
+        <a href="/store">
           <Button variant="secondary">
             Shop Now
             <ShoppingCartSolid />
